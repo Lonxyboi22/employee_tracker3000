@@ -38,34 +38,34 @@ startApp = () => {
                 break;
             case 'View all employees by manager':
                 viewAllEmployeesByManager();
-            break;
+                break;
             case 'Add a department':
                 addADepartment();
-            break;
+                break;
             case 'Add a role':
                 addARole();
-            break;
+                break;
             case 'Add an employee':
                 addAnEmployee();
-            break;
+                break;
             case 'Update employee\'s role':
                 updateEmployeeRole();
-            break;
+                break;
             case 'Update employee\'s manager':
                 updateEmployeesManager();
-            break;
+                break;
             case 'Remove a department':
                 removeADepartment();
-            break;
+                break;
             case 'Remove a role':
                 removeARole();
-            break;
+                break;
             case 'Remove an employee':
                 removeAnEmployee();
-            break;
+                break;
             case 'View total salary of department':
                 viewDepartmentSalary();
-            break;
+                break;
             case 'Exit program':
                 connection.end();
                 console.log('\n You have exited the employee management program. Thanks for using! \n');
@@ -77,7 +77,7 @@ startApp = () => {
 }
 
 viewAllDepartments = () => {
-    connection.query(`SELECT * FROM department ORDER BY department_id ASC;`, (err, res) => {
+    connection.query(`SELECT * FROM department ORDER BY id ASC;`, (err, res) => {
         if (err) throw err;
         console.table('\n', res, '\n');
         startApp();
@@ -85,7 +85,7 @@ viewAllDepartments = () => {
 };
 
 viewAllRoles = () => {
-    connection.query(`SELECT role.role_id, role.title, role.salary, department.department_name, department.department_id FROM role JOIN department ON role.department_id = department.department_id ORDER BY role.role_id ASC;`, (err, res) => {
+    connection.query(`SELECT role.id, role.title, role.salary, role.department_id FROM role JOIN department ON role.department_id = department.id ORDER BY role.id ASC;`, (err, res) => {
         if (err) throw err;
         console.table('\n', res, '\n');
         startApp();
@@ -93,7 +93,7 @@ viewAllRoles = () => {
 };
 
 viewAllEmployees = () => {
-    connection.query(`SELECT e.employee_id, e.first_name, e.last_name, role.title, department.department_name, role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee m RIGHT JOIN employee e ON e.manager_id = m.employee_id JOIN role ON e.role_id = role.role_id JOIN department ON department.department_id = role.department_id ORDER BY e.employee_id ASC;`, (err, res) => {
+    connection.query(`SELECT e.id, e.first_name, e.last_name, role.title, department.name, role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee m RIGHT JOIN employee e ON e.manager_id = m.id JOIN role ON e.id = role.id JOIN department ON department.id = role.department_id ORDER BY e.id ASC;`, (err, res) => {
         if (err) throw err;
         console.table('\n', res, '\n');
         startApp();
@@ -101,9 +101,9 @@ viewAllEmployees = () => {
 };
 
 viewAllEmployeesByManager = () => {
-    connection.query(`SELECT employee_id, first_name, last_name FROM employee ORDER BY employee_id ASC;`, (err, res) => {
+    connection.query(`SELECT id, first_name, last_name FROM employee ORDER BY id ASC;`, (err, res) => {
         if (err) throw err;
-        let managers = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id }));
+        let managers = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.id }));
         inquirer.prompt([
             {
             name: 'manager',
@@ -112,7 +112,7 @@ viewAllEmployeesByManager = () => {
             choices: managers   
             },
         ]).then((response) => {
-            connection.query(`SELECT e.employee_id, e.first_name, e.last_name, role.title, department.department_name, role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee m RIGHT JOIN employee e ON e.manager_id = m.employee_id JOIN role ON e.role_id = role.role_id JOIN department ON department.department_id = role.department_id WHERE e.manager_id = ${response.manager} ORDER BY e.employee_id ASC`, 
+            connection.query(`SELECT e.id, e.first_name, e.last_name, role.title, department.name, role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee m RIGHT JOIN employee e ON e.manager_id = m.id JOIN role ON e.id = role.id JOIN department ON department.id = role.department_id WHERE e.manager_id = ${response.manager} ORDER BY e.id ASC`, 
             (err, res) => {
                 if (err) throw err;
                 console.table('\n', res, '\n');
@@ -132,7 +132,7 @@ addADepartment = () => {
     ]).then((response) => {
         connection.query(`INSERT INTO department SET ?`, 
         {
-            department_name: response.newDept,
+            name: response.newDept,
         },
         (err, res) => {
             if (err) throw err;
@@ -145,7 +145,7 @@ addADepartment = () => {
 addARole = () => {
     connection.query(`SELECT * FROM department;`, (err, res) => {
         if (err) throw err;
-        let departments = res.map(department => ({name: department.department_name, value: department.department_id }));
+        let departments = res.map(department => ({name: department.name, value: department.id }));
         inquirer.prompt([
             {
             name: 'title',
@@ -182,10 +182,10 @@ addARole = () => {
 addAnEmployee = () => {
     connection.query(`SELECT * FROM role;`, (err, res) => {
         if (err) throw err;
-        let roles = res.map(role => ({name: role.title, value: role.role_id }));
+        let roles = res.map(role => ({name: role.title, value: role.id }));
         connection.query(`SELECT * FROM employee;`, (err, res) => {
             if (err) throw err;
-            let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id}));
+            let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.id}));
             inquirer.prompt([
                 {
                     name: 'firstName',
@@ -214,7 +214,7 @@ addAnEmployee = () => {
                 {
                     first_name: response.firstName,
                     last_name: response.lastName,
-                    role_id: response.role,
+                    id: response.role,
                     manager_id: response.manager,
                 }, 
                 (err, res) => {
@@ -237,10 +237,10 @@ addAnEmployee = () => {
 updateEmployeeRole = () => {
     connection.query(`SELECT * FROM role;`, (err, res) => {
         if (err) throw err;
-        let roles = res.map(role => ({name: role.title, value: role.role_id }));
+        let roles = res.map(role => ({name: role.title, value: role.id }));
         connection.query(`SELECT * FROM employee;`, (err, res) => {
             if (err) throw err;
-            let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id }));
+            let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.id }));
             inquirer.prompt([
                 {
                     name: 'employee',
@@ -258,10 +258,10 @@ updateEmployeeRole = () => {
                 connection.query(`UPDATE employee SET ? WHERE ?`, 
                 [
                     {
-                        role_id: response.newRole,
+                        id: response.newRole,
                     },
                     {
-                        employee_id: response.employee,
+                        id: response.employee,
                     },
                 ], 
                 (err, res) => {
@@ -277,7 +277,7 @@ updateEmployeeRole = () => {
 updateEmployeesManager = () => {
     connection.query(`SELECT * FROM employee;`, (err, res) => {
         if (err) throw err;
-        let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id }));
+        let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.id }));
         inquirer.prompt([
             {
                 name: 'employee',
@@ -298,7 +298,7 @@ updateEmployeesManager = () => {
                     manager_id: response.newManager,
                 },
                 {
-                    employee_id: response.employee,
+                    id: response.employee,
                 },
             ], 
             (err, res) => {
@@ -311,9 +311,9 @@ updateEmployeesManager = () => {
 };
 
 removeADepartment = () => {
-    connection.query(`SELECT * FROM department ORDER BY department_id ASC;`, (err, res) => {
+    connection.query(`SELECT * FROM department ORDER BY id ASC;`, (err, res) => {
         if (err) throw err;
-        let departments = res.map(department => ({name: department.department_name, value: department.department_id }));
+        let departments = res.map(department => ({name: department.name, value: department.id }));
         inquirer.prompt([
             {
             name: 'deptName',
@@ -325,7 +325,7 @@ removeADepartment = () => {
             connection.query(`DELETE FROM department WHERE ?`, 
             [
                 {
-                    department_id: response.deptName,
+                    id: response.deptName,
                 },
             ], 
             (err, res) => {
@@ -338,9 +338,9 @@ removeADepartment = () => {
 }
 
 removeARole = () => {
-    connection.query(`SELECT * FROM role ORDER BY role_id ASC;`, (err, res) => {
+    connection.query(`SELECT * FROM role ORDER BY id ASC;`, (err, res) => {
         if (err) throw err;
-        let roles = res.map(role => ({name: role.title, value: role.role_id }));
+        let roles = res.map(role => ({name: role.title, value: role.id }));
         inquirer.prompt([
             {
             name: 'title',
@@ -352,7 +352,7 @@ removeARole = () => {
             connection.query(`DELETE FROM role WHERE ?`, 
             [
                 {
-                    role_id: response.title,
+                    id: response.title,
                 },
             ], 
             (err, res) => {
@@ -365,9 +365,9 @@ removeARole = () => {
 }
 
 removeAnEmployee = () => {
-    connection.query(`SELECT * FROM employee ORDER BY employee_id ASC;`, (err, res) => {
+    connection.query(`SELECT * FROM employee ORDER BY id ASC;`, (err, res) => {
         if (err) throw err;
-        let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id }));
+        let employees = res.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.id }));
         inquirer.prompt([
             {
                 name: 'employee',
@@ -379,7 +379,7 @@ removeAnEmployee = () => {
             connection.query(`DELETE FROM employee WHERE ?`, 
             [
                 {
-                    employee_id: response.employee,
+                    id: response.employee,
                 },
             ], 
             (err, res) => {
@@ -392,9 +392,9 @@ removeAnEmployee = () => {
 }
 
 viewDepartmentSalary = () => {
-    connection.query(`SELECT * FROM department ORDER BY department_id ASC;`, (err, res) => {
+    connection.query(`SELECT * FROM department ORDER BY id ASC;`, (err, res) => {
         if (err) throw err;
-        let departments = res.map(department => ({name: department.department_name, value: department.department_id }));
+        let departments = res.map(department => ({name: department.name, value: department.id }));
         inquirer.prompt([
             {
             name: 'deptName',
