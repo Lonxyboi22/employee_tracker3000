@@ -214,7 +214,7 @@ addAnEmployee = () => {
                 {
                     first_name: response.firstName,
                     last_name: response.lastName,
-                    id: response.role,
+                    department_id: response.role,
                     manager_id: response.manager,
                 }, 
                 (err, res) => {
